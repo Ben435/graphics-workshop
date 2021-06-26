@@ -19,7 +19,7 @@ void main() {
 
     // 2. Uncomment these lines to invert some of the triangles
     vec2 cell = squareCoord - loc;
-    if (mod(2.0 * cell.x + cell.y, 5.0) == 1.0) {
+    if (mod(2.0 * cell.x + cell.y, floor(seed * 10.0)) == 1.0) {
         color = 1.0 - color;
     }
 
