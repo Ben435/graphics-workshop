@@ -26,6 +26,7 @@ function initPane() {
     project: "quilt",
     seed: 0,
     scale: 20,
+    temperature: 20,
     mesh: teapotUrl,
     fps: 0,
     kd: { r: 95, g: 230, b: 213 },
@@ -48,6 +49,7 @@ function initPane() {
   const inputs = [
     [pane.addInput(params, "seed", { min: 0, max: 1 }), ["quilt", "landscape"]],
     [pane.addInput(params, "scale", { min: 10, max: 30 }), ["landscape"]],
+    [pane.addInput(params, "temperature", { min: -40, max: 40 }), ["landscape"]],
     [
       pane
         .addInput(params, "mesh", {
@@ -181,6 +183,7 @@ const setup = {
     uniforms: {
       seed: () => params.seed,
       scale: () => params.scale,
+      temperature: () => params.temperature,
     },
   }),
   shading: regl({
