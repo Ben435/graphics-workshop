@@ -17,7 +17,7 @@ struct Ray {
 struct Material {
     vec3 kd;
     vec3 ks;
-    bool metal;
+    float metal;
     bool checker;
 };
 
@@ -68,15 +68,15 @@ void circle(inout Hit h, Ray r, float y, float radius, Material m) {
 
 // Intersect a ray with the scene
 Hit intersect(Ray r) {
-    Hit h = Hit(inf, vec3(0.0), Material(vec3(0.0), vec3(0.0), false, false));
+    Hit h = Hit(inf, vec3(0.0), Material(vec3(0.0), vec3(0.0), 0.0, false));
     sphere(h, r, vec4(0.8, -1.0, -10.0, 1.0),
-        Material(vec3(0.4, 0.2, 0.8), vec3(0.8), false, false));
+        Material(vec3(0.4, 0.2, 0.8), vec3(0.8), 0.0, false));
     sphere(h, r, vec4(-2.5, -0.2, -12.0, 1.8),
-        Material(vec3(1.0, 0.4, 0.2), vec3(0.8), true, false));
+        Material(vec3(1.0, 0.4, 0.2), vec3(0.8), 0.5, false));
     sphere(h, r, vec4(-3.5, -1.2, -6.0, 0.8),
-        Material(vec3(0.2, 0.6, 0.3), vec3(0.8), false, false));
+        Material(vec3(0.2, 0.6, 0.3), vec3(0.8), 0.0, false));
     circle(h, r, -2.0, 50.0,
-        Material(vec3(0.8, 0.8, 0.8), vec3(0.0), false, true));
+        Material(vec3(0.8, 0.8, 0.8), vec3(0.0), 0.0, true));
     return h;
 }
 
@@ -93,7 +93,7 @@ vec3 illuminate(vec3 lightPosition, vec3 pos, vec3 wo, Hit h) {
     vec3 diffuse = kd * max(dot(normalize(wi), h.normal), 0.0);
 
     // Non-dielectric materials have tinted reflections
-    vec3 ks = h.material.metal ? h.material.kd : h.material.ks;
+    vec3 ks = h.material.metal > 0.0 ? h.material.kd : h.material.ks;
     vec3 r = -reflect(normalize(wi), h.normal);
     vec3 specular = ks * pow(max(dot(r, wo), 0.0), 10.0);
 
@@ -114,15 +114,17 @@ vec3 trace(Ray r) {
     if (h.time != inf) {
         vec3 pos = r.origin + h.time * r.dir;
         vec3 color = calcLighting(pos, -r.dir, h);
-        if (h.material.metal) {
+        if (h.material.metal > 0.0) {
             vec3 dir = reflect(r.dir, h.normal);
             Hit h2 = intersect(Ray(pos, dir));
+            vec3 reflectedLighting;
             if (h2.time < inf) {
                 vec3 pos2 = pos + h2.time * dir;
-                color += 0.2 * h.material.ks * calcLighting(pos2, -dir, h2);
+                reflectedLighting = calcLighting(pos2, -dir, h2);
             } else {
-                color += 0.2 * h.material.ks * background;
+                reflectedLighting = background;
             }
+            color += h.material.metal * h.material.ks * reflectedLighting;
         }
         return color;
     }
